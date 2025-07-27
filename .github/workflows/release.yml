@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Run tests
+      run: go test -v -race
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Build examples
+      run: |
+        cd examples
+        go build -v .
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## What's Changed
+          
+          This release includes:
+          - Goroutine leak detection utilities
+          - Context support for cancellation and timeouts
+          - Benchmarking capabilities
+          - Comprehensive test coverage
+          - CI/CD pipeline
+          
+          ## Installation
+          
+          ```bash
+          go get github.com/incogni23/goleakwatch@${{ github.ref }}
+          ```
+          
+          ## Documentation
+          
+          - [API Documentation](https://github.com/incogni23/goleakwatch/blob/${{ github.ref }}/docs/API.md)
+          - [Examples](https://github.com/incogni23/goleakwatch/blob/${{ github.ref }}/examples/)
+          
+          ## Changelog
+          
+          See the [commit history](https://github.com/incogni23/goleakwatch/commits/${{ github.ref }}) for detailed changes.
+        draft: false
+        prerelease: false 

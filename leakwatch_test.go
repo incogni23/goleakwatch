@@ -18,7 +18,7 @@ func TestLeak(t *testing.T) {
 		go func() {
 			select {} // leak
 		}()
-	}, Config{
+	}, &Config{
 		Threshold:   0,
 		Wait:        100 * time.Millisecond,
 		EnableTrace: false,

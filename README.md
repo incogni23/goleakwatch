@@ -1,12 +1,11 @@
-# 🕵️‍♀️ goleakwatch
+# goleakwatch
 
 [![CI](https://github.com/incogni23/goleakwatch/workflows/CI/badge.svg)](https://github.com/incogni23/goleakwatch/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/incogni23/goleakwatch)](https://goreportcard.com/report/github.com/incogni23/goleakwatch)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/incogni23/goleakwatch)](https://go.dev/)
-[![License](https://img.shields.io/github/license/incogni23/goleakwatch)](https://github.com/incogni23/goleakwatch/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Lightweight goroutine leak checker for Go.  
-Catch leaks early in dev/test environments before they creep into production.
+A robust Go library for detecting goroutine leaks in your applications. Perfect for testing and monitoring production systems.
 
 ---
 
@@ -19,6 +18,10 @@ Catch leaks early in dev/test environments before they creep into production.
 - **Benchmarking utilities** for performance measurement
 - **Simple test wrapper** for CI-safe assertions
 - **Memory usage tracking** in benchmarks
+- **Custom error types** with rich context and stack traces
+- **Pluggable logging interface** for integration with any logger
+- **Goroutine snapshot comparison** for detailed analysis
+- **Fuzz testing support** for API misuse detection
 
 ---
 
@@ -49,7 +52,7 @@ if err != nil {
 ```go
 err := goleakwatch.Check(func() {
     // Your code here
-}, goleakwatch.Config{
+}, &goleakwatch.Config{
     Threshold:   2,                    // Allow 2 extra goroutines
     Wait:        500 * time.Millisecond,
     EnableTrace: true,                 // Dump stack traces
@@ -74,6 +77,25 @@ result := goleakwatch.Benchmark("myFunction", func() {
 fmt.Println(result) // Prints detailed metrics
 ```
 
+### Advanced Features
+```go
+// Custom error handling
+if err != nil && goleakwatch.IsLeakError(err) {
+    if leakErr, ok := goleakwatch.GetLeakError(err); ok {
+        fmt.Printf("Leak summary: %s\n", leakErr.Summary())
+        fmt.Printf("Is significant: %v\n", leakErr.IsSignificant(2.0))
+    }
+}
+
+// Snapshot comparison
+err := goleakwatch.SnapshotCheck(func() {
+    // Your code here
+}, &goleakwatch.Config{
+    Threshold: 1,
+    Wait:      100 * time.Millisecond,
+})
+```
+
 ---
 
 ## 📚 Documentation
@@ -93,6 +115,8 @@ fmt.Println(result) // Prints detailed metrics
 | `EnableTrace` | `bool` | `true` | Dump goroutine trace if leak suspected |
 | `Out` | `io.Writer` | `os.Stderr` | Where to write pprof dump |
 | `Timeout` | `time.Duration` | `5s` | Timeout for the entire check operation |
+| `Logger` | `logger.Logger` | `DefaultLogger` | Custom logger interface |
+| `FunctionName` | `string` | `""` | Name of function being tested |
 
 ---
 

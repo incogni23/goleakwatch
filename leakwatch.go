@@ -28,12 +28,12 @@ type Config struct {
 }
 
 // Check runs the given function and checks for goroutine leaks
-func Check(fn func(), cfg Config) error {
+func Check(fn func(), cfg *Config) error {
 	return CheckWithContext(context.Background(), fn, cfg)
 }
 
 // CheckWithContext runs the given function with context and checks for goroutine leaks
-func CheckWithContext(ctx context.Context, fn func(), cfg Config) error {
+func CheckWithContext(ctx context.Context, fn func(), cfg *Config) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -86,18 +86,23 @@ func CheckWithContext(ctx context.Context, fn func(), cfg Config) error {
 				traceOut = os.Stderr
 			}
 			fmt.Fprintf(traceOut, "\nDumping goroutine stack trace:\n")
-			pprof.Lookup("goroutine").WriteTo(traceOut, 2)
+			if err := pprof.Lookup("goroutine").WriteTo(traceOut, 2); err != nil {
+				log.Warn("Failed to write stack trace", logger.F("error", err))
+			}
 
 			// Capture stack trace as string for error
 			var buf strings.Builder
-			pprof.Lookup("goroutine").WriteTo(&buf, 2)
-			stackTrace = buf.String()
+			if err := pprof.Lookup("goroutine").WriteTo(&buf, 2); err != nil {
+				log.Warn("Failed to capture stack trace", logger.F("error", err))
+			} else {
+				stackTrace = buf.String()
+			}
 		}
 
 		// Create detailed error
 		leakErr := errors.NewLeakError(before, after, cfg.Threshold, cfg.Wait, stackTrace, cfg.FunctionName)
-		leakErr.WithInfo("elapsed_time", elapsed)
-		leakErr.WithInfo("context_cancelled", ctx.Err())
+		_ = leakErr.WithInfo("elapsed_time", elapsed)
+		_ = leakErr.WithInfo("context_cancelled", ctx.Err())
 
 		log.Error("Goroutine leak detected",
 			logger.F("leak_count", diff),
@@ -117,14 +122,15 @@ func CheckWithContext(ctx context.Context, fn func(), cfg Config) error {
 
 // DefaultCheck runs leak check with sane defaults
 func DefaultCheck(fn func()) error {
-	return Check(fn, Config{
+	cfg := &Config{
 		Threshold:   1,
 		Wait:        200 * time.Millisecond,
 		EnableTrace: true,
 		Out:         os.Stderr,
 		Timeout:     5 * time.Second,
 		Logger:      logger.GetGlobalLogger(),
-	})
+	}
+	return Check(fn, cfg)
 }
 
 // WithTest wraps test logic and reports errors via t.Errorf
@@ -136,7 +142,7 @@ func WithTest(t interface{ Errorf(string, ...interface{}) }, fn func()) {
 }
 
 // SnapshotCheck uses the snapshot system for more detailed analysis
-func SnapshotCheck(fn func(), cfg Config) error {
+func SnapshotCheck(fn func(), cfg *Config) error {
 	manager := snapshot.NewSnapshotManager()
 
 	// Take before snapshot

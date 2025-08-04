@@ -36,7 +36,10 @@ func NewSnapshotManager() *SnapshotManager {
 func (sm *SnapshotManager) TakeSnapshot(id string) *Snapshot {
 	// Capture stack traces
 	var buf strings.Builder
-	pprof.Lookup("goroutine").WriteTo(&buf, 2)
+	if err := pprof.Lookup("goroutine").WriteTo(&buf, 2); err != nil {
+		// Log error but continue with empty stack trace
+		buf.WriteString("Failed to capture stack trace: " + err.Error())
+	}
 
 	snapshot := &Snapshot{
 		ID:             id,

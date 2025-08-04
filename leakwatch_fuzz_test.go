@@ -21,7 +21,7 @@ func FuzzCheck(f *testing.F) {
 			t.Skip("Invalid input values")
 		}
 
-		cfg := Config{
+		cfg := &Config{
 			Threshold:    threshold,
 			Wait:         time.Duration(waitMs) * time.Millisecond,
 			EnableTrace:  enableTrace,
@@ -50,7 +50,7 @@ func FuzzCheckWithContext(f *testing.F) {
 			t.Skip("Invalid input values")
 		}
 
-		cfg := Config{
+		cfg := &Config{
 			Threshold:    threshold,
 			Wait:         time.Duration(waitMs) * time.Millisecond,
 			EnableTrace:  enableTrace,
@@ -107,7 +107,7 @@ func FuzzSnapshotCheck(f *testing.F) {
 			t.Skip("Invalid input values")
 		}
 
-		cfg := Config{
+		cfg := &Config{
 			Threshold:    threshold,
 			Wait:         time.Duration(waitMs) * time.Millisecond,
 			EnableTrace:  enableTrace,
@@ -132,7 +132,7 @@ func TestIsLeakError(t *testing.T) {
 		go func() {
 			select {} // This will leak
 		}()
-	}, Config{
+	}, &Config{
 		Threshold:   0,
 		Wait:        100 * time.Millisecond,
 		EnableTrace: false,

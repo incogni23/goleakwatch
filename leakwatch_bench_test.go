@@ -4,13 +4,20 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/incogni23/goleakwatch/internal/logger"
 )
+
+func init() {
+	// Set logger to ERROR level to reduce noise during benchmarks
+	SetLogger(logger.NewDefaultLogger(logger.ERROR, nil))
+}
 
 func BenchmarkCheckNoLeak(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Check(func() {
 			// No goroutines created
-		}, Config{
+		}, &Config{
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,
@@ -24,7 +31,7 @@ func BenchmarkCheckWithGoroutine(b *testing.B) {
 			go func() {
 				time.Sleep(1 * time.Millisecond)
 			}()
-		}, Config{
+		}, &Config{
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,
@@ -36,7 +43,7 @@ func BenchmarkDefaultCheck(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Check(func() {
 			// No goroutines created
-		}, Config{
+		}, &Config{
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,
@@ -49,7 +56,7 @@ func BenchmarkWithContext(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		CheckWithContext(ctx, func() {
 			// No goroutines created
-		}, Config{
+		}, &Config{
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,

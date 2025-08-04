@@ -123,12 +123,14 @@ func (l *DefaultLogger) log(level Level, msg string, fields ...Field) {
 	levelStr := level.String()
 
 	// Build the log message
-	logMsg := fmt.Sprintf("[%s] %s: %s", timestamp, levelStr, msg)
+	logMsg := "[" + timestamp + "] " + levelStr + ": " + msg
 
 	// Add fields if any
 	if len(l.fields) > 0 || len(fields) > 0 {
 		logMsg += " | "
-		allFields := append(l.fields, fields...)
+		allFields := make([]Field, 0, len(l.fields)+len(fields))
+		allFields = append(allFields, l.fields...)
+		allFields = append(allFields, fields...)
 
 		for i, field := range allFields {
 			if i > 0 {

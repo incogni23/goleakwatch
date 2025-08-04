@@ -23,19 +23,20 @@ type LeakError struct {
 func (e *LeakError) Error() string {
 	var parts []string
 
-	parts = append(parts, fmt.Sprintf("🚨 Goroutine leak detected: +%d goroutines", e.LeakCount))
-	parts = append(parts, fmt.Sprintf("Before: %d, After: %d (threshold: %d)", e.BeforeCount, e.AfterCount, e.Threshold))
+	parts = append(parts,
+		fmt.Sprintf("🚨 Goroutine leak detected: +%d goroutines", e.LeakCount),
+		fmt.Sprintf("Before: %d, After: %d (threshold: %d)", e.BeforeCount, e.AfterCount, e.Threshold))
 
 	if e.FunctionName != "" {
 		parts = append(parts, fmt.Sprintf("Function: %s", e.FunctionName))
 	}
 
-	parts = append(parts, fmt.Sprintf("Wait time: %v", e.WaitDuration))
-	parts = append(parts, fmt.Sprintf("Detected at: %v", e.Timestamp.Format(time.RFC3339)))
+	parts = append(parts,
+		fmt.Sprintf("Wait time: %v", e.WaitDuration),
+		fmt.Sprintf("Detected at: %v", e.Timestamp.Format(time.RFC3339)))
 
 	if e.StackTrace != "" {
-		parts = append(parts, "\nStack trace:")
-		parts = append(parts, e.StackTrace)
+		parts = append(parts, "\nStack trace:", e.StackTrace)
 	}
 
 	return strings.Join(parts, "\n")

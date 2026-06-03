@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -44,13 +45,14 @@ func (e *LeakError) Error() string {
 
 // IsLeakError checks if an error is a LeakError
 func IsLeakError(err error) bool {
-	_, ok := err.(*LeakError)
-	return ok
+	var leakErr *LeakError
+	return errors.As(err, &leakErr)
 }
 
 // GetLeakError extracts LeakError from an error
 func GetLeakError(err error) (*LeakError, bool) {
-	if leakErr, ok := err.(*LeakError); ok {
+	var leakErr *LeakError
+	if errors.As(err, &leakErr) {
 		return leakErr, true
 	}
 	return nil, false

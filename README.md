@@ -120,6 +120,12 @@ err := goleakwatch.SnapshotCheck(func() {
 
 ---
 
+## 🔭 What's Coming Next
+
+- **Stack-based goroutine detection** — the current implementation uses `runtime.NumGoroutine()`, which is a process-wide count. Running tests with `-parallel N` can cause false positives because goroutines from other tests are visible. The fix is to inspect goroutine stacks directly (via `runtime.Stack`) and filter by origin, which makes detection accurate regardless of parallelism. Until then, run leak-sensitive tests with `-p 1` to avoid interference.
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository

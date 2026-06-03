@@ -37,6 +37,21 @@ func CheckWithContext(ctx context.Context, fn func(), cfg *Config) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if cfg == nil {
+		cfg = &Config{
+			Threshold: 1,
+			Wait:      200 * time.Millisecond,
+		}
+	}
+
+	// Apply Timeout from config if set and context has no deadline
+	if cfg.Timeout > 0 {
+		if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithTimeout(ctx, cfg.Timeout)
+			defer cancel()
+		}
+	}
 
 	// Use custom logger or default
 	log := cfg.Logger

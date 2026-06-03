@@ -8,10 +8,7 @@ import (
 	"github.com/incogni23/goleakwatch/internal/logger"
 )
 
-func init() {
-	// Set logger to ERROR level to reduce noise during benchmarks
-	SetLogger(logger.NewDefaultLogger(logger.ERROR, nil))
-}
+var quietLogger = logger.NewDefaultLogger(logger.ERROR, nil)
 
 func BenchmarkCheckNoLeak(b *testing.B) {
 	for i := 0; i < b.N; i++ {
@@ -21,6 +18,7 @@ func BenchmarkCheckNoLeak(b *testing.B) {
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,
+			Logger:      quietLogger,
 		})
 	}
 }
@@ -35,6 +33,7 @@ func BenchmarkCheckWithGoroutine(b *testing.B) {
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,
+			Logger:      quietLogger,
 		})
 	}
 }
@@ -47,6 +46,7 @@ func BenchmarkDefaultCheck(b *testing.B) {
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,
+			Logger:      quietLogger,
 		})
 	}
 }
@@ -60,6 +60,7 @@ func BenchmarkWithContext(b *testing.B) {
 			Threshold:   1,
 			Wait:        10 * time.Millisecond,
 			EnableTrace: false,
+			Logger:      quietLogger,
 		})
 	}
 }

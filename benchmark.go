@@ -33,13 +33,18 @@ func Benchmark(name string, fn func()) BenchmarkResult {
 	runtime.ReadMemStats(&m)
 	afterMem := m.Alloc
 
+	var memUsage uint64
+	if afterMem > beforeMem {
+		memUsage = afterMem - beforeMem
+	}
+
 	return BenchmarkResult{
 		FunctionName:     name,
 		BeforeGoroutines: before,
 		AfterGoroutines:  after,
 		LeakCount:        after - before,
 		ExecutionTime:    executionTime,
-		MemoryUsage:      afterMem - beforeMem,
+		MemoryUsage:      memUsage,
 	}
 }
 

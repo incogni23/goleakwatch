@@ -1,3 +1,3 @@
 module github.com/incogni23/goleakwatch
 
-go 1.23
+go 1.23.10
